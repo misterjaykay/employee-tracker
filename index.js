@@ -1,6 +1,6 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
-const { lavender } = require("color-name");
+var fs = require("fs");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -13,13 +13,14 @@ var connection = mysql.createConnection({
   
     // Your password
     password: "password",
-    database: "playlist_db",
-  });
+    database: "employee_db",
+});
+
 
 //questions
 const mainPrmpt = {
     type: "list",
-    name: "main",
+    name: "menu",
     message: "What would you like to do?",
     choices: [
     "View All Employees",
@@ -35,29 +36,29 @@ const mainPrmpt = {
 const addInfo = [
     {
         type: "input",
-        name: "main",
+        name: "firstname",
         message: "What is the employee's first name??"
     },
     {
         type: "input",
-        name: "main",
+        name: "lastname",
         message: "What is the employee's last name?"
     },
     {
         type: "input",
-        name: "main",
+        name: "role",
         message: "What is the employee's role?"
     },
     {
         type: "input",
-        name: "main",
+        name: "manager",
         message: "Who is the employee's manager?"
     }
 ];
 
 const askRemove = {
     type: "list",
-    name: "main",
+    name: "remove",
     message: "Which employee do you want to remove?",
     choices: ["LIST OF EMPLOYEES HERE"]
 }
@@ -65,7 +66,7 @@ const askRemove = {
 const askRole = {
     type: "list",
     name: "main",
-    message: "Which employee do you want to remove?",
+    message: "What is the employee's role?",
     choices: [
         "Sales Lead",
         "Salesperson",
@@ -78,6 +79,13 @@ const askRole = {
     ]
 }
 
+const assignManager = {
+    type: "list",
+    mane: "assign",
+    message: "Who is the employee's manager?",
+    choices: ["LIST OF MANAGERS HERE"]
+}
+
 // List of department
 // Sales Engineering Finance Legal
 
@@ -86,26 +94,33 @@ function init() {
     .prompt(mainPrmpt)
     .then(function(res) {
         console.log('results',res);
-        switch(res) {
+        switch(res.menu) {
             case "View All Employees":
-                // function here
+                console.log("1")
+                // function here 
                 break;
             case "View All Employees by Department":
+                console.log("2")
                 // function
                 break;
             case "View All Employees by Manager":
+                console.log("3")
                 // function
                 break;
             case "Add Employee":
+                console.log("4")
                 // function
                 break;
             case "Remove Employee":
+                console.log("5")
                 // function
                 break;
             case "Update Employee Role":
+                console.log("6")
                 // function
                 break;
             case "Update Employee Manager":
+                console.log("7")
                 // function
                 break;
         }
@@ -116,7 +131,3 @@ init();
 
   
   
-  
-  
-
-    

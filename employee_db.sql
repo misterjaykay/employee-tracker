@@ -12,7 +12,7 @@ CREATE TABLE employee (
     manager_id INT
 );
 
-CREATE TABLE role (
+CREATE TABLE roles (
     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     title VARCHAR(30) NOT NULL,
     salary DECIMAL(10,2) default 0,
@@ -21,10 +21,31 @@ CREATE TABLE role (
 
 CREATE TABLE department (
     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    name VARCHAR(30) NOT NULL
+    name_dept VARCHAR(30) NOT NULL
 );
 
-INSERT INTO
-VALUES
+INSERT INTO department(name_dept) VALUES ("Sales");
+INSERT INTO department(name_dept) VALUES ("Engineering");
+INSERT INTO department(name_dept) VALUES ("Finance");
+INSERT INTO department(name_dept) VALUES ("Legal");
+
+INSERT INTO roles(title) VALUES ("Sales Lead");
+INSERT INTO roles(title) VALUES ("Salesperson");
+INSERT INTO roles(title) VALUES ("Lead Engineer");
+INSERT INTO roles(title) VALUES ("Software Engineer");
+INSERT INTO roles(title) VALUES ("Account Manager");
+INSERT INTO roles(title) VALUES ("Accountant");
+INSERT INTO roles(title) VALUES ("Legal Team Lead");
+INSERT INTO roles(title) VALUES ("Lawyer");
+
 
 SELECT * FROM employee;
+
+    
+        
+        
+        
+        
+        
+        
+        
