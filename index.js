@@ -16,6 +16,20 @@ var connection = mysql.createConnection({
     database: "employee_db",
 });
 
+connection.connect(function(err) {
+    if (err) throw err; // on each connection query
+    console.log("connected as id " + connection.threadId + "\n");
+    afterConnection();
+
+});
+
+function afterConnection() {
+    connection.query("SELECT * FROM songs", function (err, res) {
+      if (err) throw err;
+      console.log(res);
+      connection.end(); // on end of query
+    });
+}
 
 //questions
 const mainPrmpt = {
