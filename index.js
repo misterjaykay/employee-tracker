@@ -8,14 +8,10 @@ var addInfo = require("./questions/addInfo");
 ///// MYSQL
 var connection = mysql.createConnection({
   host: "localhost",
-
   port: 3306,
-
   user: "root",
-
   password: "password",
   database: "employee_db",
-  
 });
 
 ///// APPEARING TEXT WHEN START APP
@@ -65,44 +61,75 @@ const assignManager = {
 
 function init() {
   inquirer
-  // .prompt(mainPrompt)
-  .prompt(addInfo)
+  .prompt(mainPrompt)
   .then(function (res) {
     console.log("results", res);
     switch (res.menu) {
       case "View All Employees":
-        console.log("1");
-        viewAllEmployee();
-        // function
+        viewAllEmployee(); // 90% FINISHED
         break;
+
       case "View All Employees by Department":
         viewAllEmplDept();
         console.log("2");
-        // function
         break;
+
       case "View All Employees by Manager":
         viewAllEmplMng();
         console.log("3");
-        // function
         break;
+
       case "Add Employee":
         console.log("4");
         funcAddInfo();
-        // function
         break;
+
       case "Remove Employee":
         console.log("5");
-        // function
         break;
+
       case "Update Employee Role":
         console.log("6");
-        // function
         break;
+
       case "Update Employee Manager":
         console.log("7");
-        // function
         break;
     }
+  });
+}
+
+////////// Cases
+// View All Employee
+function viewAllEmployee() {
+  var query = "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
+  query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
+  query += " LEFT JOIN department ON roles.department_id = department.id;";
+  console.log("whats query?",query);
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      console.log("id: " + res[i].id + " || FirstName: " + res[i].first_name + " || LastName: " + res[i].last_name +
+      "Title: " + res[i].title + " || Department: " + res[i].name_dept + " || Salary: " + res[i].salary +
+      "Manager: " + res[i].manager_id);
+    }
+    
+  });
+}
+
+function viewAllEmplDept() {
+  connection.query("SELECT * FROM department RIGHT JOIN employee ON department.name_dept = name_dept", 
+  function (err, res) {
+    if (err) throw err;
+    console.log(res);
+  });
+}
+
+function viewAllEmplMng() {
+  connection.query("SELECT * FROM employee RIGHT JOIN employee ON department.name_dept = name_dept", 
+  function (err, res) {
+    if (err) throw err;
+    console.log(res);
   });
 }
 
@@ -122,28 +149,5 @@ function funcAddInfo() {
         connection.end(); // on end of query
       }
     );
-  });
-}
-
-function viewAllEmployee() {
-  connection.query("SELECT * FROM employee", function (err, res) {
-    if (err) throw err;
-    console.log(res);
-  });
-}
-
-function viewAllEmplDept() {
-  connection.query("SELECT * FROM department RIGHT JOIN employee ON department.name_dept = name_dept", 
-  function (err, res) {
-    if (err) throw err;
-    console.log(res);
-  });
-}
-
-function viewAllEmplMng() {
-  connection.query("SELECT * FROM employee RIGHT JOIN employee ON department.name_dept = name_dept", 
-  function (err, res) {
-    if (err) throw err;
-    console.log(res);
   });
 }
