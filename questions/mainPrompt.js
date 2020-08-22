@@ -10,6 +10,7 @@ const mainPrompt = {
       "Remove Employee",
       "Update Employee Role",
       "Update Employee Manager",
+      "Exit"
     ],
   };
 

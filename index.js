@@ -1,6 +1,6 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
-var figlet = require('figlet');
+var figlet = require("figlet");
 var mainPrompt = require("./questions/mainPrompt");
 var addInfo = require("./questions/addInfo");
 // var fs = require("fs");
@@ -19,24 +19,32 @@ connection.connect(function (err) {
   if (err) throw err; // on each connection query
   console.log("connected as id " + connection.threadId + "\n");
 
-  figlet.text('Welcome To \n Employee \n Manager v1.0', {
-    horizontalLayout: 'default',
-    verticalLayout: 'full',
-    width: 80,
-    whitespaceBreak: true
-  }, function(err, data) {
-    if (err) {
-        console.log('Something went wrong...');
+  figlet.text(
+    "Welcome To \n Employee \n Manager v1.0",
+    {
+      horizontalLayout: "default",
+      verticalLayout: "full",
+      width: 80,
+      whitespaceBreak: true,
+    },
+    function (err, data) {
+      if (err) {
+        console.log("Something went wrong...");
         console.dir(err);
         return;
+      }
+      console.log(
+        "-----------------------------------------------------------------"
+      );
+      console.log(data);
+      console.log(
+        "-----------------------------------------------------------------"
+      );
+      console.log("\n");
+
+      init();
     }
-    console.log("-----------------------------------------------------------------");
-    console.log(data);
-    console.log("-----------------------------------------------------------------");
-    console.log("\n");
-    
-    init();
-  });
+  );
 });
 
 //questions
@@ -60,10 +68,7 @@ const assignManager = {
 // id first last title dept salary manager
 
 function init() {
-  inquirer
-  .prompt(mainPrompt)
-  .then(function (res) {
-    console.log("results", res);
+  inquirer.prompt(mainPrompt).then(function (res) {
     switch (res.menu) {
       case "View All Employees":
         viewAllEmployee(); // 90% FINISHED
@@ -102,35 +107,84 @@ function init() {
 ////////// Cases
 // View All Employee
 function viewAllEmployee() {
-  var query = "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
+  var query =
+    "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
   query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
   query += " LEFT JOIN department ON roles.department_id = department.id;";
-  console.log("whats query?",query);
+
   connection.query(query, function (err, res) {
     if (err) throw err;
     for (var i = 0; i < res.length; i++) {
-      console.log("id: " + res[i].id + " || FirstName: " + res[i].first_name + " || LastName: " + res[i].last_name +
-      "Title: " + res[i].title + " || Department: " + res[i].name_dept + " || Salary: " + res[i].salary +
-      "Manager: " + res[i].manager_id);
+      console.log(
+        "id: " +
+          res[i].id +
+          " || FirstName: " +
+          res[i].first_name +
+          " || LastName: " +
+          res[i].last_name +
+          "Title: " +
+          res[i].title +
+          " || Department: " +
+          res[i].name_dept +
+          " || Salary: " +
+          res[i].salary +
+          "Manager: " +
+          res[i].manager_id
+      );
     }
-    
+    init();
   });
 }
 
 function viewAllEmplDept() {
-  connection.query("SELECT * FROM department RIGHT JOIN employee ON department.name_dept = name_dept", 
-  function (err, res) {
-    if (err) throw err;
-    console.log(res);
-  });
+  inquirer
+    .prompt({
+      name: "dept",
+      type: "list",
+      message: "Which department do you want to browse?",
+      choices: ["Sales", "Engineering", "Finance", "Legal"],
+    })
+    .then(function (answer) {
+      var query =
+        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
+      query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
+      query += " LEFT JOIN department ON roles.department_id = department.id";
+      query += " WHERE ?";
+      // query += " WHERE department.name_dept = "
+
+      connection.query(query, { name_dept: answer.dept }, function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+          console.log(
+            "id: " +
+              res[i].id +
+              " || FirstName: " +
+              res[i].first_name +
+              " || LastName: " +
+              res[i].last_name +
+              "Title: " +
+              res[i].title +
+              " || Department: " +
+              res[i].name_dept +
+              " || Salary: " +
+              res[i].salary +
+              "Manager: " +
+              res[i].manager_id
+          );
+        }
+        init();
+      });
+    });
 }
 
 function viewAllEmplMng() {
-  connection.query("SELECT * FROM employee RIGHT JOIN employee ON department.name_dept = name_dept", 
-  function (err, res) {
-    if (err) throw err;
-    console.log(res);
-  });
+  connection.query(
+    "SELECT * FROM employee RIGHT JOIN employee ON department.name_dept = name_dept",
+    function (err, res) {
+      if (err) throw err;
+      console.log(res);
+    }
+  );
 }
 
 function funcAddInfo() {
