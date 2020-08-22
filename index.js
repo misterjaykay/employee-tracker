@@ -1,7 +1,11 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
+var figlet = require('figlet');
+var mainPrompt = require("./questions/mainPrompt");
+var addInfo = require("./questions/addInfo");
 // var fs = require("fs");
 
+///// MYSQL
 var connection = mysql.createConnection({
   host: "localhost",
 
@@ -14,75 +18,37 @@ var connection = mysql.createConnection({
   
 });
 
+///// APPEARING TEXT WHEN START APP
 connection.connect(function (err) {
   if (err) throw err; // on each connection query
   console.log("connected as id " + connection.threadId + "\n");
-  init();
+
+  figlet.text('Welcome To \n Employee \n Manager v1.0', {
+    horizontalLayout: 'default',
+    verticalLayout: 'full',
+    width: 80,
+    whitespaceBreak: true
+  }, function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log("-----------------------------------------------------------------");
+    console.log(data);
+    console.log("-----------------------------------------------------------------");
+    console.log("\n");
+    
+    init();
+  });
 });
 
-// module.exports = // use this to moduliize.
-
 //questions
-const mainPrmpt = {
-  type: "list",
-  name: "menu",
-  message: "What would you like to do?",
-  choices: [
-    "View All Employees",
-    "View All Employees by Department",
-    "View All Employees by Manager",
-    "Add Employee",
-    "Remove Employee",
-    "Update Employee Role",
-    "Update Employee Manager",
-  ],
-};
-
-const addInfo = [
-  {
-    type: "input",
-    name: "firstname",
-    message: "What is the employee's first name??",
-  },
-  {
-    type: "input",
-    name: "lastname",
-    message: "What is the employee's last name?",
-  },
-  {
-    type: "input",
-    name: "role",
-    message: "What is the employee's role?",
-  },
-  {
-    type: "list",
-    name: "manager",
-    message: "Who is the employee's manager?",
-    choices: ["LIST OF MANAGERS HERE"],
-  },
-];
-
 const askRemove = {
   type: "list",
   name: "remove",
   message: "Which employee do you want to remove?",
   choices: ["LIST OF EMPLOYEES HERE"],
-};
-
-const askRole = {
-  type: "list",
-  name: "main",
-  message: "What is the employee's role?",
-  choices: [
-    "Sales Lead",
-    "Salesperson",
-    "Lead Engineer",
-    "Software Engineer",
-    "Account Manager",
-    "Accountant",
-    "Legal Team Lead",
-    "Lawyer",
-  ],
 };
 
 const assignManager = {
@@ -98,7 +64,10 @@ const assignManager = {
 // id first last title dept salary manager
 
 function init() {
-  inquirer.prompt(mainPrmpt).then(function (res) {
+  inquirer
+  // .prompt(mainPrompt)
+  .prompt(addInfo)
+  .then(function (res) {
     console.log("results", res);
     switch (res.menu) {
       case "View All Employees":
