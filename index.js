@@ -62,11 +62,6 @@ const assignManager = {
   choices: ["LIST OF MANAGERS HERE"],
 };
 
-// List of department
-// Sales Engineering Finance Legal
-
-// id first last title dept salary manager
-
 function init() {
   inquirer.prompt(mainPrompt).then(function (res) {
     switch (res.menu) {
@@ -75,22 +70,19 @@ function init() {
         break;
 
       case "View All Employees by Department":
-        viewAllEmplDept();
-        console.log("2");
+        viewAllEmplDept(); // 80% FINISHED
         break;
 
       case "View All Employees by Manager":
-        viewAllEmplMng();
-        console.log("3");
+        viewAllEmplMng(); // 50% and NEED TO WORK ON MANAGER_ID
         break;
 
       case "Add Employee":
-        console.log("4");
-        funcAddInfo();
+        addEmployee(); // 50% FINISHED
         break;
 
       case "Remove Employee":
-        console.log("5");
+        deleteEmployee(); // NOT WORKING, NEEDS WORK ON PULLING LIST OF EMPLOYEES
         break;
 
       case "Update Employee Role":
@@ -183,29 +175,80 @@ function viewAllEmplDept() {
 }
 
 function viewAllEmplMng() {
-  connection.query(
-    "SELECT * FROM employee RIGHT JOIN employee ON department.name_dept = name_dept",
-    function (err, res) {
-      if (err) throw err;
-      console.log(res);
-    }
-  );
+  inquirer
+    .prompt({
+      name: "manager",
+      type: "list",
+      message: "Which manager's team do you want to browse?",
+      choices: ["Managers ARE LISTED HERE"],
+    })
+    .then(function (answer) {
+      var query =
+        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
+      query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
+      query += " LEFT JOIN department ON roles.department_id = department.id";
+      query += " WHERE ?";
+
+      connection.query(query, { manager_id: answer.manager }, function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+          console.log(
+            "id: " +
+              res[i].id +
+              " || FirstName: " +
+              res[i].first_name +
+              " || LastName: " +
+              res[i].last_name +
+              "Title: " +
+              res[i].title +
+              " || Department: " +
+              res[i].name_dept +
+              " || Salary: " +
+              res[i].salary +
+              "Manager: " +
+              res[i].manager_id
+          );
+        }
+        init();
+      });
+    });
 }
 
-function funcAddInfo() {
-  inquirer.prompt(addInfo).then(function (res) {
+function addEmployee() {
+  inquirer
+  .prompt(addInfo)
+  .then(function (res) {
     connection.query(
-      "INSERT INTO employee SET?",
+      "INSERT INTO employee SET ?",
       {
         first_name: res.firstname,
         last_name: res.lastname,
-        role: res.role,
-        // manager_id:
+        role_id: res.role,
+        manager_id: res.manager
       },
       function (err, res) {
         if (err) throw err;
         console.log(res);
-        connection.end(); // on end of query
+        init();
+      }
+    );
+  });
+}
+
+function deleteEmployee() {
+  inquirer
+  .prompt(addInfo)
+  .then(function (res) {
+    connection.query(
+      "DELETE FROM employee WHERE ?",
+      {
+        first_name: res.firstname,
+        last_name: res.lastname,
+      },
+      function (err, res) {
+        if (err) throw err;
+        console.log(res);
+        init();
       }
     );
   });
