@@ -100,6 +100,11 @@ function init() {
       case "Update Employee Manager":
         console.log("7");
         break;
+
+      case "Exit":
+        endApp();
+        break;
+
     }
   });
 }
@@ -205,3 +210,14 @@ function funcAddInfo() {
     );
   });
 }
+
+function endApp() {
+  console.log(
+    "-----------------------------------------------------------------"
+  );
+  console.log("Thanks for using Employee Manager v1.0");
+  console.log(
+    "-----------------------------------------------------------------"
+  );
+  connection.end();
+} 
