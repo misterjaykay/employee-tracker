@@ -1,9 +1,8 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
 var figlet = require("figlet");
+var util = require("util");
 var mainPrompt = require("./questions/mainPrompt");
-var addInfo = require("./questions/addInfo");
-// var fs = require("fs");
 
 ///// MYSQL
 var connection = mysql.createConnection({
@@ -42,27 +41,14 @@ connection.connect(function (err) {
       );
       console.log("\n");
 
-      init();
+      mainMenu();
     }
   );
 });
 
-//questions
-const askRemove = {
-  type: "list",
-  name: "remove",
-  message: "Which employee do you want to remove?",
-  choices: ["LIST OF EMPLOYEES HERE"],
-};
+connection.query = util.promisify(connection.query);
 
-const assignManager = {
-  type: "list",
-  mane: "assign",
-  message: "Who is the employee's manager?",
-  choices: ["LIST OF MANAGERS HERE"],
-};
-
-function init() {
+function mainMenu() {
   inquirer.prompt(mainPrompt).then(function (res) {
     switch (res.menu) {
       case "View All Employees":
@@ -74,34 +60,35 @@ function init() {
         break;
 
       case "View All Employees by Manager":
-        viewAllEmplMng(); // 50% and NEED TO WORK ON MANAGER_ID
+        viewAllEmplMng(); // 50% and NEED TO WORK ON MANAGER_ID // BONUS POINTS
         break;
 
       case "Add Employee":
-        addEmployee(); // 50% FINISHED
+        addEmployee(); // 70% FINISHED // ROLE NEEDS CONVERTED INTO ROLE_ID
         break;
 
       case "Remove Employee":
-        deleteEmployee(); // NOT WORKING, NEEDS WORK ON PULLING LIST OF EMPLOYEES
+        deleteEmployee(); // 80% WORKING, NEEDS TO UNDERSTAND WHY
         break;
 
-      case "Update Employee Role":
-        console.log("6");
+      case "Update Employee Role": // NOTHING HAS BEEN DONE.
+        updateEmplRole();
         break;
 
-      case "Update Employee Manager":
-        console.log("7");
+      case "Update Employee Manager": // 10%
+        updateEmplManager();
         break;
 
       case "Exit":
         endApp();
         break;
-
     }
   });
 }
 
 ////////// Cases
+const allEmployeeList = [];
+
 // View All Employee
 function viewAllEmployee() {
   var query =
@@ -111,6 +98,8 @@ function viewAllEmployee() {
 
   connection.query(query, function (err, res) {
     if (err) throw err;
+    allEmployeeList.push(res); // pushing all emp to array on top.
+    console.log(res);
     for (var i = 0; i < res.length; i++) {
       console.log(
         "id: " +
@@ -119,7 +108,7 @@ function viewAllEmployee() {
           res[i].first_name +
           " || LastName: " +
           res[i].last_name +
-          "Title: " +
+          " || Title: " +
           res[i].title +
           " || Department: " +
           res[i].name_dept +
@@ -129,7 +118,7 @@ function viewAllEmployee() {
           res[i].manager_id
       );
     }
-    init();
+    mainMenu();
   });
 }
 
@@ -159,37 +148,65 @@ function viewAllEmplDept() {
               res[i].first_name +
               " || LastName: " +
               res[i].last_name +
-              "Title: " +
+              " || Title: " +
               res[i].title +
               " || Department: " +
               res[i].name_dept +
               " || Salary: " +
               res[i].salary +
-              "Manager: " +
+              " || Manager: " +
               res[i].manager_id
           );
         }
-        init();
+        mainMenu();
       });
     });
 }
 
-function viewAllEmplMng() {
-  inquirer
+async function viewAllEmplMng() {
+  // var choicesVar = array.
+  // const choicesMng = [];
+  // var query =
+  //       "SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.name_dept, roles.salary,";
+  //     query += " CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee";
+  //     query += " LEFT JOIN roles  ON employee.role_id = roles.id";
+  //     query += " LEFT JOIN department ON roles.department_id = department.id";
+  //     query += " LEFT JOIN employee manager ON manager.id = employee.manager_id";
+  //     connection.query(query, function (err, res) {
+  //       if (err) throw err;
+  //       for (var i = 0; i < res.length; i++) {
+  //       var managerOnly = res;
+  //       var { id, manager } = managerOnly;
+  //       choicesMng.push(manager);
+
+  //       }
+  //       console.log(res);
+  //       console.log(manager);
+  //       // console.log(manager[5]);
+  //       console.log(choicesMng);
+  //     });
+
+  await inquirer
     .prompt({
       name: "manager",
       type: "list",
       message: "Which manager's team do you want to browse?",
-      choices: ["Managers ARE LISTED HERE"],
+      choices: choicesMng,
     })
     .then(function (answer) {
       var query =
-        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
-      query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
+        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary,";
+      query +=
+        " CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee";
+      query += " LEFT JOIN roles  ON employee.role_id = roles.id";
       query += " LEFT JOIN department ON roles.department_id = department.id";
       query += " WHERE ?";
+      // query += " LEFT JOIN employee manager ON manager.id = employee.manager_id";
 
-      connection.query(query, { manager_id: answer.manager }, function (err, res) {
+      connection.query(query, { manager_id: answer.manager }, function (
+        err,
+        res
+      ) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
           console.log(
@@ -199,59 +216,192 @@ function viewAllEmplMng() {
               res[i].first_name +
               " || LastName: " +
               res[i].last_name +
-              "Title: " +
+              " || Title: " +
               res[i].title +
               " || Department: " +
               res[i].name_dept +
               " || Salary: " +
               res[i].salary +
-              "Manager: " +
+              " || Manager: " +
               res[i].manager_id
           );
         }
-        init();
+        mainMenu();
       });
     });
 }
 
 function addEmployee() {
-  inquirer
-  .prompt(addInfo)
-  .then(function (res) {
-    connection.query(
-      "INSERT INTO employee SET ?",
-      {
-        first_name: res.firstname,
-        last_name: res.lastname,
-        role_id: res.role,
-        manager_id: res.manager
-      },
-      function (err, res) {
-        if (err) throw err;
-        console.log(res);
-        init();
-      }
-    );
+  var query =
+    "SELECT employee.id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
+  query += "LEFT JOIN roles  ON employee.role_id = roles.id ";
+  query += "LEFT JOIN department ON roles.department_id = department.id ";
+  query += "LEFT JOIN employee manager ON manager.id = employee.manager_id ";
+  query += "WHERE employee.manager_id IS NOT NULL GROUP BY manager";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    console.log(res);
+    const managerChoices = res.map(({ id, manager }) => ({
+      name: `${manager}`,
+      value: id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstname",
+          message: "What is the employee's first name??",
+        },
+        {
+          type: "input",
+          name: "lastname",
+          message: "What is the employee's last name?",
+        },
+        {
+          type: "list",
+          name: "role",
+          message: "What is the employee's role?",
+          choices: [
+            "Sales Lead",
+            "Salesperson",
+            "Lead Engineer",
+            "Software Engineer",
+            "Account Manager",
+            "Accountant",
+            "Legal Team Lead",
+            "Lawyer",
+          ],
+        },
+        {
+          type: "list",
+          name: "manager",
+          message: "Who is the employee's manager?",
+          choices: managerChoices,
+        },
+      ])
+      .then(function (res) {
+        console.log(res.manager);
+        console.log(res.role);
+        connection.query(
+          "INSERT INTO employee SET ?",
+          {
+            first_name: res.firstname,
+            last_name: res.lastname,
+            role_id: res.role,
+            manager_id: res.manager,
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log(res);
+            mainMenu();
+          }
+        );
+      });
   });
 }
 
+// GET ALL EMPLOYEES AND STORE IT INTO ARRAY. (CONST employees)
+// ANOTHER VARIABLE WITH CHOICES (USE DESTRUCTING)
+
+// const employees = await viewAllEmployees();
+// const employeeChoices = employees.map(( {id, first_name, last_name} ) => ({
+//   name: `${first_name} ${last_name}`,
+//   value: id
+// }));
+
+// const { empId } = await prompt([
+//   {
+//     type: "list",
+//     name: "empId",
+//     message: "Which employee do you want to remove",
+//     choices: employeeChoices
+//   },
+//   await deleteEmployee(empId),
+//   mainPrompt()
+// ]);
+
 function deleteEmployee() {
-  inquirer
-  .prompt(addInfo)
-  .then(function (res) {
-    connection.query(
-      "DELETE FROM employee WHERE ?",
-      {
-        first_name: res.firstname,
-        last_name: res.lastname,
-      },
-      function (err, res) {
-        if (err) throw err;
-        console.log(res);
-        init();
-      }
-    );
+  // USE THIS TO ALL UPDATE FUNCTIONS
+  connection.query("SELECT id, first_name, last_name FROM employee", function (
+    err,
+    res
+  ) {
+    if (err) throw err;
+    const employeeChoices = res.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
+      value: id,
+    }));
+
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "remove",
+          message: "Which employee do you want to remove?",
+          choices: employeeChoices,
+        },
+      ])
+      .then(function (res) {
+        console.log("whatsthis", res.remove);
+        connection.query(
+          "DELETE FROM employee WHERE id=?",
+          res.remove,
+          function (err, res) {
+            if (err) throw err;
+            mainMenu();
+          }
+        );
+      });
   });
+}
+
+function updateEmplRole() {
+  var query = connection.query(
+    "UPDATE employee SET ? WHERE ?",
+    [
+      // {
+      //   quantity: 100
+      // },
+      // {
+      //   flavor: "Rocky Road"
+      // }
+    ],
+    function (err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " products updated!\n");
+      mainMenu();
+    }
+  );
+}
+
+function updateEmplManager() {
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "assign",
+        message: "Who is the employee's manager?",
+        choices: ["LIST OF MANAGERS HERE"],
+      },
+    ])
+    .then(function (res) {
+      var query = connection.query(
+        "UPDATE employee SET ? WHERE ?",
+        [
+          // {
+          //   quantity: 100
+          // },
+          // {
+          //   flavor: "Rocky Road"
+          // }
+        ],
+        function (err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " products updated!\n");
+          mainMenu();
+        }
+      );
+    });
 }
 
 function endApp() {
@@ -263,4 +413,4 @@ function endApp() {
     "-----------------------------------------------------------------"
   );
   connection.end();
-} 
+}

@@ -8,3 +8,20 @@ SELECT employee.id, first_name, last_name, roles.title, department.name_dept, ro
 FROM roles 
 RIGHT JOIN employee ON employee.role_id = roles.id
 LEFT JOIN department ON roles.department_id = department.id;
+
+-- to bring which manager you want to see --
+SELECT employee.id,  
+CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+LEFT JOIN roles  ON employee.role_id = roles.id
+LEFT JOIN department ON roles.department_id = department.id
+LEFT JOIN employee manager ON manager.id = employee.manager_id
+WHERE employee.manager_id = '1';
+
+-- to show all the managers listed --
+SELECT employee.id,  
+CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+LEFT JOIN roles  ON employee.role_id = roles.id
+LEFT JOIN department ON roles.department_id = department.id
+LEFT JOIN employee manager ON manager.id = employee.manager_id
+WHERE employee.manager_id IS NOT NULL
+GROUP BY manager
