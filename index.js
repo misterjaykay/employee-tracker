@@ -52,24 +52,27 @@ function mainMenu() {
   inquirer.prompt(mainPrompt).then(function (res) {
     switch (res.menu) {
       case "View All Employees":
-        viewAllEmployee(); // 90% FINISHED
+        viewAllEmployee(); // 90% FINISHED // MANAGER_ID needs to be names when showed.
         break;
 
       case "View All Employees by Department":
-        viewAllEmplDept(); // 80% FINISHED
+        viewAllEmplDept(); // 80% FINISHED // MANAGER_ID needs to be names when showed.
         break;
 
       case "View All Employees by Manager":
-        viewAllEmplMng(); // 50% and NEED TO WORK ON MANAGER_ID // BONUS POINTS
+        initViewAllEmplMng(); // 80% and NEED TO WORK ON MANAGER_ID(NULL) // BONUS POINTS
+        // MANAGER ID BECOMES UNDEFINED, NEEDS TO BE NAMES.
         break;
 
       case "Add Employee":
         // employeeChoices();
         initAddEmployee(); // 70% NOT WORKING // ROLE NEEDS CONVERTED INTO ROLE_ID
+        // ROLES NEEDS TO BE WORKED, IT IS CURRENTLY HARD-CODED WHICH WILL NOT WORK.
         break;
 
       case "Remove Employee":
         deleteEmployee(); // 80% WORKING, NEEDS TO UNDERSTAND WHY
+        // JUST NEED TO CLEAN CONSOLE LOGS.
         break;
 
       case "Update Employee Role": // 90% FINISHED, DOUBLE CHECK.
@@ -89,7 +92,7 @@ function mainMenu() {
   });
 }
 
-// View All Employee
+///// VIEW ALL EMPLOYEES
 function viewAllEmployee() {
   var query =
     "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
@@ -127,6 +130,7 @@ function viewAllEmployee() {
   });
 }
 
+///// VIEW ALL EMPLOYEES BY DEPARTMENT
 function viewAllEmplDept() {
   inquirer
     .prompt({
@@ -174,42 +178,36 @@ function viewAllEmplDept() {
     });
 }
 
-function viewAllEmplMng() {
-  // var choicesVar = array.
-  // const choicesMng = [];
-  // var query =
-  //       "SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.name_dept, roles.salary,";
-  //     query += " CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee";
-  //     query += " LEFT JOIN roles  ON employee.role_id = roles.id";
-  //     query += " LEFT JOIN department ON roles.department_id = department.id";
-  //     query += " LEFT JOIN employee manager ON manager.id = employee.manager_id";
-  //     connection.query(query, function (err, res) {
-  //       if (err) throw err;
-  //       for (var i = 0; i < res.length; i++) {
-  //       var managerOnly = res;
-  //       var { id, manager } = managerOnly;
-  //       choicesMng.push(manager);
+///// VIEW ALL EMPLOYEES BY MANAGER
+function initViewAllEmplMng() {
+  var query =
+    "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager ";
+  query +=
+    "FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id ";
+  query += "WHERE employee.manager_id > 0 GROUP BY manager;";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    const managerChoices = res.map(({ manager_id, manager }) => ({
+      name: `${manager}`,
+      value: manager_id,
+    }));
+    viewAllEmplMng(managerChoices);
+  });
+}
 
-  //       }
-  //       console.log(res);
-  //       console.log(manager);
-  //       // console.log(manager[5]);
-  //       console.log(choicesMng);
-  //     });
+function viewAllEmplMng(manager) {
 
   inquirer
     .prompt({
       name: "manager",
       type: "list",
       message: "Which manager's team do you want to browse?",
-      choices: choicesMng,
+      choices: manager
     })
     .then(function (answer) {
       var query =
-        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary,";
-      query +=
-        " CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee";
-      query += " LEFT JOIN roles  ON employee.role_id = roles.id";
+        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary";
+      query += " FROM employee LEFT JOIN roles  ON employee.role_id = roles.id";
       query += " LEFT JOIN department ON roles.department_id = department.id";
       query += " WHERE ?";
       // query += " LEFT JOIN employee manager ON manager.id = employee.manager_id";
@@ -499,12 +497,29 @@ function updateEmplManager(employee) {
 }
 
 function endApp() {
-  console.log(
-    "-----------------------------------------------------------------"
-  );
-  console.log("Thanks for using Employee Manager v1.0");
-  console.log(
-    "-----------------------------------------------------------------"
+  figlet.text(
+    "Thanks for \n Using App \n Goodbye!",
+    {
+      horizontalLayout: "default",
+      verticalLayout: "full",
+      width: 80,
+      whitespaceBreak: true,
+    },
+    function (err, data) {
+      if (err) {
+        console.log("Something went wrong...");
+        console.dir(err);
+        return;
+      }
+      console.log(
+        "-----------------------------------------------------------------"
+      );
+      console.log(data);
+      console.log(
+        "-----------------------------------------------------------------"
+      );
+      console.log("\n");
+    }
   );
   connection.end();
 }
