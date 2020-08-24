@@ -25,3 +25,10 @@ LEFT JOIN department ON roles.department_id = department.id
 LEFT JOIN employee manager ON manager.id = employee.manager_id
 WHERE employee.manager_id IS NOT NULL
 GROUP BY manager
+
+-- to show all the manager with their id --
+SELECT employee.manager_id,
+CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+LEFT JOIN employee manager ON employee.manager_id = manager.id
+WHERE employee.manager_id > 0
+GROUP BY manager;

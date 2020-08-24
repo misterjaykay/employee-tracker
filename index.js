@@ -77,7 +77,7 @@ function mainMenu() {
         // updateEmplRole();
         break;
 
-      case "Update Employee Manager": // 10%
+      case "Update Employee Manager": // 90% FINISHED, DOUBLE CHECK.
         initUpdateEmplManager();
         // updateEmplManager();
         break;
@@ -334,6 +334,7 @@ function addEmployee(res) {
 //   mainPrompt()
 // ]);
 
+///// DELETE EMPLOYEE
 function deleteEmployee() {
   // USE THIS TO ALL UPDATE FUNCTIONS
   const query = "SELECT id, first_name, last_name FROM employee";
@@ -370,6 +371,7 @@ function deleteEmployee() {
   });
 }
 
+///// UPDATE EMPLOYEE ROLE
 function initUpdateEmplRole() {
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res){
@@ -428,6 +430,7 @@ function updateEmplRole(employee) {
   
 }
 
+///// UPDATE EMPLOYEE MANAGER
 function initUpdateEmplManager() {
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res){
@@ -440,7 +443,17 @@ function initUpdateEmplManager() {
   });
 }
 
-function updateEmplManager() {
+/// Need to assign manager's employee id on employees.
+function updateEmplManager(employee) {
+  var query = "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager ";
+  query += "FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id ";
+  query += "WHERE employee.manager_id > 0 GROUP BY manager;"
+  connection.query(query, function (err, res){
+    if (err) throw err;
+    const managerChoices = res.map(({ manager_id, manager }) => ({
+      name: `${manager}`,
+      value: manager_id,
+    }));
   inquirer
     .prompt([
       {
@@ -451,21 +464,22 @@ function updateEmplManager() {
       },
       {
         type: "list",
-        name: "newrole",
+        name: "newmanager",
         message: "What is the employee's new manager?",
-        choices: roleChoices
+        choices: managerChoices
       }
     ])
     .then(function (res) {
+      console.log(res);
       var query = connection.query(
         "UPDATE employee SET ? WHERE ?",
         [
-          // {
-          //   quantity: 100
-          // },
-          // {
-          //   flavor: "Rocky Road"
-          // }
+          {
+            manager_id: res.newmanager
+          },
+          {
+            id: res.select
+          }
         ],
         function (err, res) {
           if (err) throw err;
@@ -474,6 +488,7 @@ function updateEmplManager() {
         }
       );
     });
+  });
 }
 
 function endApp() {
