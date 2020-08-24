@@ -87,23 +87,19 @@ function mainMenu() {
         break;
 
       case "Remove Employee":
-        deleteEmployee(); // 80% WORKING, NEEDS TO UNDERSTAND WHY
-        // JUST NEED TO CLEAN CONSOLE LOGS.
+        deleteEmployee(); // 90% WORKING
         break;
 
       case "Update Employee Role": // 90% FINISHED, DOUBLE CHECK.
         initUpdateEmplRole();
-        // updateEmplRole();
         break;
 
       case "Update Employee Manager": // 90% FINISHED, DOUBLE CHECK.
         initUpdateEmplManager();
-        // updateEmplManager();
         break;
 
       case "Salary Report by Department":
-        salaryReport();
-        // View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+        salaryReport(); // 90% WORKING, ADD IF ANYTHING COMES IN MIND.
         break;
 
       case "Exit":
@@ -295,7 +291,7 @@ function addEmployee(manager) {
 
 ///// DELETE EMPLOYEE
 function deleteEmployee() {
-  // USE THIS TO ALL UPDATE FUNCTIONS
+
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res) {
     if (err) throw err;
@@ -314,7 +310,7 @@ function deleteEmployee() {
         },
       ])
       .then(function (res) {
-        console.log("whatsthis", res.remove);
+
         connection.query(
           "DELETE FROM employee WHERE id=?",
           res.remove,
