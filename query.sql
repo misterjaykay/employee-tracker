@@ -32,3 +32,13 @@ CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
 LEFT JOIN employee manager ON employee.manager_id = manager.id
 WHERE employee.manager_id > 0
 GROUP BY manager;
+
+-- get the salary for each department --
+SELECT SUM(roles.salary) salary, name_dept FROM roles
+LEFT JOIN department ON roles.department_id = department.id
+WHERE roles.department_id = 1;
+
+-- get the people from each department --
+SELECT first_name, last_name, roles.title FROM employee
+LEFT JOIN roles ON employee.role_id = roles.id
+GROUP BY roles.department_id = 1

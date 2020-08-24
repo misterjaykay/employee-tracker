@@ -2,7 +2,6 @@ var inquirer = require("inquirer");
 var mysql = require("mysql");
 var figlet = require("figlet");
 var util = require("util");
-var mainPrompt = require("./questions/mainPrompt");
 var cTable = require("console.table");
 
 ///// MYSQL
@@ -51,7 +50,22 @@ connection.connect(function (err) {
 connection.query = util.promisify(connection.query);
 
 function mainMenu() {
-  inquirer.prompt(mainPrompt).then(function (res) {
+  inquirer.prompt([{
+    type: "list",
+    name: "menu",
+    message: "What would you like to do?",
+    choices: [
+      "View All Employees",
+      "View All Employees by Department",
+      "View All Employees by Manager",
+      "Add Employee",
+      "Remove Employee",
+      "Update Employee Role",
+      "Update Employee Manager",
+      "Salary Report by Department",
+      "Exit"
+    ]
+  }]).then(function (res) {
     switch (res.menu) {
       case "View All Employees":
         viewAllEmployee(); // 90% FINISHED // MANAGER_ID needs to be names when showed.
@@ -87,7 +101,8 @@ function mainMenu() {
         // updateEmplManager();
         break;
 
-      case "Salary Report":
+      case "Salary Report by Department":
+        salaryReport();
         // View the total utilized budget of a department -- ie the combined salaries of all employees in that department
         break;
 
@@ -429,6 +444,39 @@ function updateEmplManager(employee) {
             mainMenu();
           }
         );
+      });
+  });
+}
+
+function salaryReport() {
+  const query = "SELECT id, name_dept from department";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    const deptChoices = res.map(({ id, name_dept }) => ({
+      name: `${name_dept}`,
+      value: id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "report",
+          message: "Which department of combined salaries do you want to browse?",
+          choices: deptChoices,
+        },
+      ])
+      .then(function (res) {
+        var query =
+          "SELECT SUM(roles.salary) total_salary, department.name_dept FROM employee ";
+        query += "LEFT JOIN roles ON employee.role_id = roles.id ";
+        query += "LEFT JOIN department ON roles.department_id = department.id ";
+        query += "WHERE department.id =?";
+        console.log(res);
+        connection.query(query, res.report, function (err, res) {
+          if (err) throw err;
+          console.table(res);
+          mainMenu();
+        });
       });
   });
 }
