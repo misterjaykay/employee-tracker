@@ -1,6 +1,13 @@
 const inquirer = require("inquirer");
 
-questions = [
+function test() {
+inquirer
+.prompt(questions)
+.then(function (res){
+  console.log(res);
+})
+}
+var questions = [
   {
     type: "list",
     name: "databasetype",
@@ -12,14 +19,16 @@ questions = [
     type: "input",
     name: "url",
     message: "Enter the URL",
-    when: (answers) => answers.databasetype === "mongoDB",
+    // when: (answers) => answers.databasetype === "mongoDB",
     when: function (answers) {  
-      if (answers.databasetype === "hi") {
+      if (answers.databasetype === "mongoDB") {
         console.log("whatever");
       }
     }
   },
 ];
+
+test();
 
 function deleteEmployee(empId) {
 
