@@ -3,12 +3,14 @@ var mysql = require("mysql");
 var figlet = require("figlet");
 var util = require("util");
 var mainPrompt = require("./questions/mainPrompt");
+const { title } = require("process");
 
 ///// MYSQL
 var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
+  // password: process.env.MYSQL_KEY,
   password: "password",
   database: "employee_db",
 });
@@ -249,11 +251,9 @@ function viewAllEmplMng(manager) {
 // const result = await employeeChoices();
 function initAddEmployee() {
   var query =
-    "SELECT employee.id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
-  query += "LEFT JOIN roles  ON employee.role_id = roles.id ";
-  query += "LEFT JOIN department ON roles.department_id = department.id ";
+    "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
   query += "LEFT JOIN employee manager ON manager.id = employee.manager_id ";
-  query += "WHERE employee.manager_id IS NOT NULL GROUP BY manager";
+  query += "GROUP BY manager";
   connection.query(query, function (err, res) {
     if (err) throw err;
     // console.log(res);
@@ -265,8 +265,14 @@ function initAddEmployee() {
   });
 }
 
-function addEmployee(res) {
-  // const result = await employeeChoices();
+function addEmployee(manager) {
+  const query = "SELECT roles.id, roles.title FROM roles;";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    const roleChoices = res.map(({ id, title }) => ({
+      name: `${title}`,
+      value: id,
+    }));
   inquirer
     .prompt([
       {
@@ -283,22 +289,13 @@ function addEmployee(res) {
         type: "list",
         name: "role",
         message: "What is the employee's role?",
-        choices: [
-          "Sales Lead",
-          "Salesperson",
-          "Lead Engineer",
-          "Software Engineer",
-          "Account Manager",
-          "Accountant",
-          "Legal Team Lead",
-          "Lawyer",
-        ],
+        choices: roleChoices
       },
       {
         type: "list",
         name: "manager",
         message: "Who is the employee's manager?",
-        choices: res,
+        choices: manager
       },
     ])
     .then(function (res) {
@@ -319,6 +316,7 @@ function addEmployee(res) {
         }
       );
     });
+  });
 }
 
 // GET ALL EMPLOYEES AND STORE IT INTO ARRAY. (CONST employees)
