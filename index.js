@@ -117,9 +117,12 @@ function mainMenu() {
 ///// VIEW ALL EMPLOYEES
 function viewAllEmployee() {
   var query =
-    "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
-  query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
-  query += " LEFT JOIN department ON roles.department_id = department.id;";
+    "SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.name_dept, roles.salary, ";
+  query +=
+    "CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
+  query += "LEFT JOIN employee manager ON employee.manager_id = manager.id ";
+  query +=
+    "LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON department.id = roles.department_id;";
 
   connection.query(query, function (err, res) {
     if (err) throw err;
@@ -132,29 +135,39 @@ function viewAllEmployee() {
 
 ///// VIEW ALL EMPLOYEES BY DEPARTMENT
 function viewAllEmplDept() {
-  inquirer
-    .prompt({
-      name: "dept",
-      type: "list",
-      message: "Which department do you want to browse?",
-      choices: ["Sales", "Engineering", "Finance", "Legal"],
-    })
-    .then(function (answer) {
-      var query =
-        "SELECT employee.id, first_name, last_name, roles.title, department.name_dept, roles.salary, employee.manager_id";
-      query += " FROM roles RIGHT JOIN employee ON employee.role_id = roles.id";
-      query += " LEFT JOIN department ON roles.department_id = department.id";
-      query += " WHERE ?";
-      // query += " WHERE department.name_dept = "
-
-      connection.query(query, { name_dept: answer.dept }, function (err, res) {
-        if (err) throw err;
-        console.log("\n");
-        console.table(res);
-        console.log("\n");
-        mainMenu();
+  const query = "SELECT id, name_dept from department";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    const deptChoices = res.map(({ id, name_dept }) => ({
+      name: `${name_dept}`,
+      value: id,
+    }));
+    inquirer
+      .prompt({
+        name: "dept",
+        type: "list",
+        message: "Which department do you want to browse?",
+        choices: deptChoices,
+      })
+      .then(function (answer) {
+        var query =
+          "SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.name_dept, roles.salary, ";
+        query +=
+          "CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
+        query +=
+          "LEFT JOIN employee manager ON employee.manager_id = manager.id ";
+        query +=
+          "LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON department.id = roles.department_id";
+        query += " WHERE department_id=?";
+        connection.query(query, answer.dept, function (err, res) {
+          if (err) throw err;
+          console.log("\n");
+          console.table(res);
+          console.log("\n");
+          mainMenu();
+        });
       });
-    });
+  });
 }
 
 ///// VIEW ALL EMPLOYEES BY MANAGER
@@ -210,7 +223,6 @@ function initAddEmployee() {
   query += "GROUP BY manager";
   connection.query(query, function (err, res) {
     if (err) throw err;
-
     const managerChoices = res.map(({ id, manager }) => ({
       name: `${manager}`,
       value: id,
@@ -263,7 +275,6 @@ function addEmployee(manager) {
           },
           function (err, res) {
             if (err) throw err;
-
             mainMenu();
           }
         );
@@ -401,7 +412,7 @@ function updateEmplManager(employee) {
         },
       ])
       .then(function (res) {
-        var query = connection.query(
+        connection.query(
           "UPDATE employee SET ? WHERE ?",
           [
             {
@@ -413,7 +424,6 @@ function updateEmplManager(employee) {
           ],
           function (err, res) {
             if (err) throw err;
-
             mainMenu();
           }
         );

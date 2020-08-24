@@ -41,13 +41,4 @@ INSERT INTO roles(title, salary, department_id) VALUES ("Accountant", 60000, 3);
 INSERT INTO roles(title, salary, department_id) VALUES ("Legal Team Lead", 160000, 4);
 INSERT INTO roles(title, salary, department_id) VALUES ("Lawyer", 130000, 4);
 
-INSERT INTO employee(first_name, last_name, role_id, manager_id)
-VALUES("Adam", "Bower",1 ,NULL);
-
-INSERT INTO employee(first_name, last_name, role_id, manager_id)
-VALUES("Ashley", "Buckland",5 ,NULL);
-
-INSERT INTO employee(first_name, last_name, role_id, manager_id)
-VALUES("John", "Leonard",1 ,1);
-
 SELECT * FROM employee;
