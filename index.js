@@ -3,7 +3,7 @@ var mysql = require("mysql");
 var figlet = require("figlet");
 var util = require("util");
 var mainPrompt = require("./questions/mainPrompt");
-const { title } = require("process");
+var cTable = require("console.table");
 
 ///// MYSQL
 var connection = mysql.createConnection({
@@ -87,6 +87,10 @@ function mainMenu() {
         // updateEmplManager();
         break;
 
+      case "Salary Report":
+        // View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+        break;
+
       case "Exit":
         endApp();
         break;
@@ -103,31 +107,9 @@ function viewAllEmployee() {
 
   connection.query(query, function (err, res) {
     if (err) throw err;
-    console.log(res);
-    function Employee(id, first, last, title, dept, salary, manager) {
-      this.id = id;
-      this.first_name = first;
-      this.last_name = last;
-      this.title = title;
-      this.name_dept = dept;
-      this.salary = salary;
-      this.manager_id = manager;
-    }
-
-    var newArr = [];
-    for (var i = 0; i < res.length; i++) {
-      var list = new Employee(
-        res[i].id,
-        res[i].first_name,
-        res[i].last_name,
-        res[i].title,
-        res[i].name_dept,
-        res[i].salary,
-        res[i].manager_id
-      );
-      newArr.push(list);
-    }
-    console.table(newArr);
+    console.log("\n");
+    console.table(res);
+    console.log("\n");
     mainMenu();
   });
 }
@@ -151,30 +133,9 @@ function viewAllEmplDept() {
 
       connection.query(query, { name_dept: answer.dept }, function (err, res) {
         if (err) throw err;
-        function Employee(id, first, last, title, dept, salary, manager) {
-          this.id = id;
-          this.first_name = first;
-          this.last_name = last;
-          this.title = title;
-          this.name_dept = dept;
-          this.salary = salary;
-          this.manager_id = manager;
-        }
-
-        var newArr = [];
-        for (var i = 0; i < res.length; i++) {
-          var list = new Employee(
-            res[i].id,
-            res[i].first_name,
-            res[i].last_name,
-            res[i].title,
-            res[i].name_dept,
-            res[i].salary,
-            res[i].manager_id
-          );
-          newArr.push(list);
-        }
-        console.table(newArr);
+        console.log("\n");
+        console.table(res);
+        console.log("\n");
         mainMenu();
       });
     });
@@ -198,13 +159,12 @@ function initViewAllEmplMng() {
 }
 
 function viewAllEmplMng(manager) {
-
   inquirer
     .prompt({
       name: "manager",
       type: "list",
       message: "Which manager's team do you want to browse?",
-      choices: manager
+      choices: manager,
     })
     .then(function (answer) {
       var query =
@@ -219,30 +179,9 @@ function viewAllEmplMng(manager) {
         res
       ) {
         if (err) throw err;
-        function Employee(id, first, last, title, dept, salary, manager) {
-          this.id = id;
-          this.first_name = first;
-          this.last_name = last;
-          this.title = title;
-          this.name_dept = dept;
-          this.salary = salary;
-          this.manager_id = manager;
-        }
-
-        var newArr = [];
-        for (var i = 0; i < res.length; i++) {
-          var list = new Employee(
-            res[i].id,
-            res[i].first_name,
-            res[i].last_name,
-            res[i].title,
-            res[i].name_dept,
-            res[i].salary,
-            res[i].manager_id
-          );
-          newArr.push(list);
-        }
-        console.table(newArr);
+        console.log("\n");
+        console.table(res);
+        console.log("\n");
         mainMenu();
       });
     });
@@ -273,49 +212,49 @@ function addEmployee(manager) {
       name: `${title}`,
       value: id,
     }));
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "firstname",
-        message: "What is the employee's first name??",
-      },
-      {
-        type: "input",
-        name: "lastname",
-        message: "What is the employee's last name?",
-      },
-      {
-        type: "list",
-        name: "role",
-        message: "What is the employee's role?",
-        choices: roleChoices
-      },
-      {
-        type: "list",
-        name: "manager",
-        message: "Who is the employee's manager?",
-        choices: manager
-      },
-    ])
-    .then(function (res) {
-      console.log(res.manager);
-      console.log(res.role);
-      connection.query(
-        "INSERT INTO employee SET ?",
+    inquirer
+      .prompt([
         {
-          first_name: res.firstname,
-          last_name: res.lastname,
-          role_id: res.role,
-          manager_id: res.manager,
+          type: "input",
+          name: "firstname",
+          message: "What is the employee's first name??",
         },
-        function (err, res) {
-          if (err) throw err;
-          console.log(res);
-          mainMenu();
-        }
-      );
-    });
+        {
+          type: "input",
+          name: "lastname",
+          message: "What is the employee's last name?",
+        },
+        {
+          type: "list",
+          name: "role",
+          message: "What is the employee's role?",
+          choices: roleChoices,
+        },
+        {
+          type: "list",
+          name: "manager",
+          message: "Who is the employee's manager?",
+          choices: manager,
+        },
+      ])
+      .then(function (res) {
+        console.log(res.manager);
+        console.log(res.role);
+        connection.query(
+          "INSERT INTO employee SET ?",
+          {
+            first_name: res.firstname,
+            last_name: res.lastname,
+            role_id: res.role,
+            manager_id: res.manager,
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log(res);
+            mainMenu();
+          }
+        );
+      });
   });
 }
 
