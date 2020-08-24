@@ -16,7 +16,7 @@ var connection = mysql.createConnection({
 
 ///// APPEARING TEXT WHEN START APP
 connection.connect(function (err) {
-  if (err) throw err; // on each connection query
+  if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
 
   figlet.text(
@@ -49,64 +49,69 @@ connection.connect(function (err) {
 
 connection.query = util.promisify(connection.query);
 
+///// MAIN MENU (MAIN PROMPT)
 function mainMenu() {
-  inquirer.prompt([{
-    type: "list",
-    name: "menu",
-    message: "What would you like to do?",
-    choices: [
-      "View All Employees",
-      "View All Employees by Department",
-      "View All Employees by Manager",
-      "Add Employee",
-      "Remove Employee",
-      "Update Employee Role",
-      "Update Employee Manager",
-      "Salary Report by Department",
-      "Exit"
-    ]
-  }]).then(function (res) {
-    switch (res.menu) {
-      case "View All Employees":
-        viewAllEmployee(); // 90% FINISHED // MANAGER_ID needs to be names when showed.
-        break;
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "menu",
+        message: "What would you like to do?",
+        choices: [
+          "View All Employees",
+          "View All Employees by Department",
+          "View All Employees by Manager",
+          "Add Employee",
+          "Remove Employee",
+          "Update Employee Role",
+          "Update Employee Manager",
+          "Salary Report by Department",
+          "Exit",
+        ],
+      },
+    ])
+    .then(function (res) {
+      switch (res.menu) {
+        case "View All Employees":
+          viewAllEmployee(); // 90% FINISHED // MANAGER_ID needs to be names when showed.
+          break;
 
-      case "View All Employees by Department":
-        viewAllEmplDept(); // 80% FINISHED // MANAGER_ID needs to be names when showed.
-        break;
+        case "View All Employees by Department":
+          viewAllEmplDept(); // 80% FINISHED // MANAGER_ID needs to be names when showed.
+          break;
 
-      case "View All Employees by Manager":
-        initViewAllEmplMng(); // 80% and NEED TO WORK ON MANAGER_ID(NULL) // BONUS POINTS
-        // MANAGER ID BECOMES UNDEFINED, NEEDS TO BE NAMES.
-        break;
+        case "View All Employees by Manager":
+          initViewAllEmplMng(); // 80% and NEED TO WORK ON MANAGER_ID(NULL) // BONUS POINTS
+          // MANAGER ID BECOMES UNDEFINED, NEEDS TO BE NAMES.
+          break;
 
-      case "Add Employee":
-        // employeeChoices();
-        initAddEmployee(); // 70% NOT WORKING // ROLE NEEDS CONVERTED INTO ROLE_ID
-        // ROLES NEEDS TO BE WORKED, IT IS CURRENTLY HARD-CODED WHICH WILL NOT WORK.
-        break;
+        case "Add Employee":
+          // employeeChoices();
+          initAddEmployee(); // 70% NOT WORKING // ROLE NEEDS CONVERTED INTO ROLE_ID
+          // ROLES NEEDS TO BE WORKED, IT IS CURRENTLY HARD-CODED WHICH WILL NOT WORK.
+          break;
 
-      case "Remove Employee":
-        deleteEmployee(); // 90% WORKING
-        break;
+        case "Remove Employee":
+          deleteEmployee(); // 90% WORKING
+          break;
 
-      case "Update Employee Role": // 90% FINISHED, DOUBLE CHECK.
-        initUpdateEmplRole();
-        break;
+        case "Update Employee Role": // 90% FINISHED, DOUBLE CHECK.
+          initUpdateEmplRole();
+          break;
 
-      case "Update Employee Manager": // 90% FINISHED, DOUBLE CHECK.
-        initUpdateEmplManager();
-        break;
+        case "Update Employee Manager": // 90% FINISHED, DOUBLE CHECK.
+          initUpdateEmplManager();
+          break;
 
-      case "Salary Report by Department":
-        salaryReport(); // 90% WORKING, ADD IF ANYTHING COMES IN MIND.
-        break;
+        case "Salary Report by Department":
+          salaryReport(); // 90% WORKING, ADD IF ANYTHING COMES IN MIND.
+          break;
 
-      case "Exit":
-        endApp();
-        break;
-    }
-  });
+        case "Exit":
+          endApp();
+          break;
+      }
+    });
 }
 
 ///// VIEW ALL EMPLOYEES
@@ -183,7 +188,6 @@ function viewAllEmplMng(manager) {
       query += " FROM employee LEFT JOIN roles  ON employee.role_id = roles.id";
       query += " LEFT JOIN department ON roles.department_id = department.id";
       query += " WHERE ?";
-      // query += " LEFT JOIN employee manager ON manager.id = employee.manager_id";
 
       connection.query(query, { manager_id: answer.manager }, function (
         err,
@@ -198,7 +202,7 @@ function viewAllEmplMng(manager) {
     });
 }
 
-// const result = await employeeChoices();
+///// ADDING EMPLOYEE
 function initAddEmployee() {
   var query =
     "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee ";
@@ -206,7 +210,7 @@ function initAddEmployee() {
   query += "GROUP BY manager";
   connection.query(query, function (err, res) {
     if (err) throw err;
-    // console.log(res);
+
     const managerChoices = res.map(({ id, manager }) => ({
       name: `${manager}`,
       value: id,
@@ -249,8 +253,6 @@ function addEmployee(manager) {
         },
       ])
       .then(function (res) {
-        console.log(res.manager);
-        console.log(res.role);
         connection.query(
           "INSERT INTO employee SET ?",
           {
@@ -261,7 +263,7 @@ function addEmployee(manager) {
           },
           function (err, res) {
             if (err) throw err;
-            console.log(res);
+
             mainMenu();
           }
         );
@@ -269,29 +271,8 @@ function addEmployee(manager) {
   });
 }
 
-// GET ALL EMPLOYEES AND STORE IT INTO ARRAY. (CONST employees)
-// ANOTHER VARIABLE WITH CHOICES (USE DESTRUCTING)
-
-// const employees = await viewAllEmployees();
-// const employeeChoices = employees.map(( {id, first_name, last_name} ) => ({
-//   name: `${first_name} ${last_name}`,
-//   value: id
-// }));
-
-// const { empId } = await prompt([
-//   {
-//     type: "list",
-//     name: "empId",
-//     message: "Which employee do you want to remove",
-//     choices: employeeChoices
-//   },
-//   await deleteEmployee(empId),
-//   mainPrompt()
-// ]);
-
-///// DELETE EMPLOYEE
+///// DELETING EMPLOYEE
 function deleteEmployee() {
-
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res) {
     if (err) throw err;
@@ -310,7 +291,6 @@ function deleteEmployee() {
         },
       ])
       .then(function (res) {
-
         connection.query(
           "DELETE FROM employee WHERE id=?",
           res.remove,
@@ -323,7 +303,7 @@ function deleteEmployee() {
   });
 }
 
-///// UPDATE EMPLOYEE ROLE
+///// UPDATING EMPLOYEE ROLE
 function initUpdateEmplRole() {
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res) {
@@ -360,7 +340,6 @@ function updateEmplRole(employee) {
         },
       ])
       .then(function (res) {
-        console.log("whats this", res);
         connection.query(
           "UPDATE employee SET? WHERE ?",
           [
@@ -373,7 +352,7 @@ function updateEmplRole(employee) {
           ],
           function (err, res) {
             if (err) throw err;
-            console.log("completed");
+
             mainMenu();
           }
         );
@@ -381,7 +360,7 @@ function updateEmplRole(employee) {
   });
 }
 
-///// UPDATE EMPLOYEE MANAGER
+///// UPDATING EMPLOYEES ASSIGNED MANAGER
 function initUpdateEmplManager() {
   const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res) {
@@ -394,7 +373,6 @@ function initUpdateEmplManager() {
   });
 }
 
-/// Need to assign manager's employee id on employees.
 function updateEmplManager(employee) {
   var query =
     "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager ";
@@ -423,7 +401,6 @@ function updateEmplManager(employee) {
         },
       ])
       .then(function (res) {
-        console.log(res);
         var query = connection.query(
           "UPDATE employee SET ? WHERE ?",
           [
@@ -436,7 +413,7 @@ function updateEmplManager(employee) {
           ],
           function (err, res) {
             if (err) throw err;
-            console.log(res.affectedRows + " products updated!\n");
+
             mainMenu();
           }
         );
@@ -444,6 +421,7 @@ function updateEmplManager(employee) {
   });
 }
 
+///// SALARY REPORT BY DEPARTMENT
 function salaryReport() {
   const query = "SELECT id, name_dept from department";
   connection.query(query, function (err, res) {
@@ -457,7 +435,8 @@ function salaryReport() {
         {
           type: "list",
           name: "report",
-          message: "Which department of combined salaries do you want to browse?",
+          message:
+            "Which department of combined salaries do you want to browse?",
           choices: deptChoices,
         },
       ])
@@ -467,7 +446,7 @@ function salaryReport() {
         query += "LEFT JOIN roles ON employee.role_id = roles.id ";
         query += "LEFT JOIN department ON roles.department_id = department.id ";
         query += "WHERE department.id =?";
-        console.log(res);
+
         connection.query(query, res.report, function (err, res) {
           if (err) throw err;
           console.table(res);
@@ -477,6 +456,7 @@ function salaryReport() {
   });
 }
 
+///// ENDING APP
 function endApp() {
   figlet.text(
     "Thanks for \n Using App \n Goodbye!",
