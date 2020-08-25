@@ -36,7 +36,13 @@
 
 --- 
   ## Preview
+  ### Working Demo GIF
+  ![Test Run](/assets/images/sample.gif)
+  <hr>
+  
+  ### Screenshot
   ![Screenshot](/assets/images/screenshot.png)
+  
 
 --- 
   ## Contribute to "Employee Manager"
