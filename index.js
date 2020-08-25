@@ -385,17 +385,22 @@ function initUpdateEmplManager() {
 }
 
 function updateEmplManager(employee) {
-  var query =
-    "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager ";
-  query +=
-    "FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id ";
-  query += "WHERE employee.manager_id > 0 GROUP BY manager;";
+  // var query =
+  //   "SELECT employee.manager_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager ";
+  // query +=
+  //   "FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id ";
+  // query += "WHERE employee.manager_id > 0 GROUP BY manager;";
+  const query = "SELECT id, first_name, last_name FROM employee";
   connection.query(query, function (err, res) {
     if (err) throw err;
-    const managerChoices = res.map(({ manager_id, manager }) => ({
-      name: `${manager}`,
-      value: manager_id,
+    const employeeChoices = res.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
+      value: id,
     }));
+    // const managerChoices = res.map(({ manager_id, manager }) => ({
+    //   name: `${manager}`,
+    //   value: manager_id,
+    // }));
     inquirer
       .prompt([
         {
@@ -408,7 +413,8 @@ function updateEmplManager(employee) {
           type: "list",
           name: "newmanager",
           message: "What is the employee's new manager?",
-          choices: managerChoices,
+          // choices: managerChoices,
+          choices: employeeChoices
         },
       ])
       .then(function (res) {
