@@ -8,9 +8,10 @@
 ---
   ## Getting Started
   - [Installation](#Installation)
-  - [Contribute](#Contribute)
   - [Test](#Test)
   - [Usage](#Usage)
+  - [Preview](#Preview)
+  - [Contribute](#Contribute)
   - [Questions](#Questions)
   - [Licenses](#Licenses)
 
